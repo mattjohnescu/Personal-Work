@@ -1,0 +1,396 @@
+---
+title: "A1_Johnescu_Matthew"
+author: "Matthew Johnescu"
+date: "2024-02-20"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+##Code Chunk 1
+```{r setup, include=TRUE}
+#Code Chunk 1:
+#1.A
+knitr::opts_chunk$set(echo = TRUE)
+
+#installing missing packages
+options(repos = c(CRAN = "https://cran.r-project.org"))
+install.packages("psych")
+install.packages("caret")
+install.packages("C50")
+
+#loading Packages
+library(rmarkdown)
+library(psych)
+library(caret)
+library(C50)
+
+#Loading and assigning the CSV
+churn <- read.csv(file = "C:/Users/johne/Downloads/churn_balanced-1.csv")
+
+#Taking a look at the input data
+summary(churn)
+#looking at data types
+str(churn)
+
+#1.B 
+
+#factoring strings
+churn$COLLEGE <- factor(churn$COLLEGE)
+churn$REPORTED_SATISFACTION <- factor(churn$REPORTED_SATISFACTION)
+churn$REPORTED_USAGE_LEVEL <- factor(churn$REPORTED_USAGE_LEVEL)
+churn$CONSIDERING_CHANGE_OF_PLAN <- factor(churn$CONSIDERING_CHANGE_OF_PLAN)
+churn$LEAVE <- factor(churn$LEAVE)
+
+#Checking factors
+str(churn)
+
+```
+##Code Chunk 2
+```{r}
+#Code Chunk 2:
+
+#2.A
+#Hisogram visualizing income
+hist(churn$INCOME, main = "Hisogram of Income Distribution", xlab = "Income", col = "lightgreen")
+
+#2.B
+#Boxplot of Average call duration
+boxplot(churn$AVERAGE_CALL_DURATION, main = "Average Call Duration", ylab = "Call Duration In Minutes")
+
+#2.C
+#Deciles Showing Income level
+income_deciles <- quantile(churn$INCOME, probs = seq(0, 1, by = 0.1))
+print(income_deciles)
+
+
+```
+##Code Chunk 3
+```{r}
+#Code Chunk 3:
+
+#3.A
+#Showing count value as percentage
+#Calculate the percentage of each level in the LEAVE variable
+leave_table <- table(churn$LEAVE)
+leave_percentage <- (leave_table / sum(leave_table)) * 100
+#Calculate the percentage of each level in the COLLEGE variable
+college_table <- table(churn$COLLEGE)
+college_percentage <- (college_table / sum(college_table)) * 100
+#REPORTED_SATISFACTION
+reported_satisfaction_table <- table(churn$REPORTED_SATISFACTION)
+reported_satisfaction_percentage <- (reported_satisfaction_table / sum(reported_satisfaction_table)) * 100
+print(reported_satisfaction_percentage)
+#REPORTED_USAGE_LEVEL
+reported_usage_level_table <- table(churn$REPORTED_USAGE_LEVEL)
+reported_usage_level_percentage <- (reported_usage_level_table / sum(reported_usage_level_table)) * 100
+print(reported_usage_level_percentage)
+#CONSIDERING_CHANGE_OF_PLAN
+considering_change_of_plan_table <- table(churn$CONSIDERING_CHANGE_OF_PLAN)
+considering_change_of_plan_percentage <- (considering_change_of_plan_table / sum(considering_change_of_plan_table)) * 100
+print(considering_change_of_plan_percentage)
+#Print the percentages
+print(leave_percentage)
+print(college_percentage)
+print(reported_satisfaction_percentage)
+print(reported_usage_level_table)
+print(considering_change_of_plan_table)
+
+#3.B
+#plots
+# Plot for Leave
+leave_counts <- table(churn$LEAVE)
+leave_counts_ordered <- leave_counts[order(-leave_counts)]
+barplot(leave_counts_ordered, main = "Count of Instances for Leave Category", 
+        xlab = "Stay or Leave", ylab = "Count", las = 2, col = "blue")
+
+# Plot for Reported Satisfaction
+reported_satisfaction_counts <- table(churn$REPORTED_SATISFACTION)
+reported_satisfaction_counts_ordered <- reported_satisfaction_counts[order(-reported_satisfaction_counts)]
+barplot(reported_satisfaction_counts_ordered, main = "Count of Instances for Reported Satisfaction Category", 
+        xlab = "Reported Satisfaction", ylab = "Count", las = 2, col = "red")
+```
+##Code Chunk 4
+```{r}
+#Code Chunk 4:
+
+#4.A
+#Using the cor function to look at different variables
+cor(churn$OVERAGE,churn$INCOME)
+cor(churn$OVERAGE,churn$LEFTOVER)
+cor(churn$OVERAGE,churn$HOUSE)
+cor(churn$OVERAGE,churn$HANDSET_PRICE)
+cor(churn$OVERAGE,churn$OVER_15MINS_CALLS_PER_MONTH)
+cor(churn$OVERAGE,churn$AVERAGE_CALL_DURATION)
+
+cor(churn$INCOME,churn$OVERAGE)
+cor(churn$INCOME,churn$LEFTOVER)
+cor(churn$INCOME,churn$HOUSE)
+cor(churn$INCOME,churn$HANDSET_PRICE)
+cor(churn$INCOME,churn$OVER_15MINS_CALLS_PER_MONTH)
+cor(churn$INCOME,churn$AVERAGE_CALL_DURATION)
+
+cor(churn$LEFTOVER,churn$INCOME)
+cor(churn$LEFTOVER,churn$OVERAGE)
+cor(churn$LEFTOVER,churn$HOUSE)
+cor(churn$LEFTOVER,churn$HANDSET_PRICE)
+cor(churn$LEFTOVER,churn$OVER_15MINS_CALLS_PER_MONTH)
+cor(churn$LEFTOVER,churn$AVERAGE_CALL_DURATION)
+
+cor(churn$HOUSE,churn$INCOME)
+cor(churn$HOUSE,churn$OVERAGE)
+cor(churn$HOUSE,churn$LEFTOVER)
+cor(churn$HOUSE,churn$HANDSET_PRICE)
+cor(churn$HOUSE,churn$OVER_15MINS_CALLS_PER_MONTH)
+cor(churn$HOUSE,churn$AVERAGE_CALL_DURATION)
+
+cor(churn$HANDSET_PRICE,churn$INCOME)
+cor(churn$HANDSET_PRICE,churn$OVERAGE)
+cor(churn$HANDSET_PRICE,churn$LEFTOVER)
+cor(churn$HANDSET_PRICE,churn$HOUSE)
+cor(churn$HANDSET_PRICE,churn$OVER_15MINS_CALLS_PER_MONTH)
+cor(churn$HANDSET_PRICE,churn$AVERAGE_CALL_DURATION)
+
+cor(churn$OVER_15MINS_CALLS_PER_MONTH,churn$INCOME)
+cor(churn$OVER_15MINS_CALLS_PER_MONTH,churn$OVERAGE)
+cor(churn$OVER_15MINS_CALLS_PER_MONTH,churn$LEFTOVER)
+cor(churn$OVER_15MINS_CALLS_PER_MONTH,churn$HOUSE)
+cor(churn$OVER_15MINS_CALLS_PER_MONTH,churn$HANDSET_PRICE)
+cor(churn$OVER_15MINS_CALLS_PER_MONTH,churn$AVERAGE_CALL_DURATION)
+
+cor(churn$AVERAGE_CALL_DURATION,churn$INCOME)
+cor(churn$AVERAGE_CALL_DURATION,churn$OVERAGE)
+cor(churn$AVERAGE_CALL_DURATION,churn$LEFTOVER)
+cor(churn$AVERAGE_CALL_DURATION,churn$HOUSE)
+cor(churn$AVERAGE_CALL_DURATION,churn$HANDSET_PRICE)
+cor(churn$AVERAGE_CALL_DURATION,churn$OVER_15MINS_CALLS_PER_MONTH)
+
+#Notable Correlations
+#AVERAGE_CALL_DURATION and LEFTOVER (-0.6602851)
+#OVER_15MINS_CALLS_PER_MONTH and OVERAGE (0.7705568)
+#HANDSET_PRICE and INCOME (0.7271996)
+
+#4.B
+#Pair Panels
+#making a data frame with all int values from churn and LEAVE factor
+churn_int <- data.frame(LEAVE = churn$LEAVE, INCOME = churn$INCOME, OVERAGE = churn$OVERAGE, LEFTOVER = churn$LEFTOVER, HOUSE = churn$HOUSE, HANDSET_PRICE = churn$HANDSET_PRICE, OVER_15MINS_CALLS_PER_MONTH = churn$OVER_15MINS_CALLS_PER_MONTH, AVERAGE_CALL_DURATION = churn$AVERAGE_CALL_DURATION )
+
+#pairs panels with ellipse and off
+pairs.panels(churn_int,ellipse=FALSE, lm = TRUE)
+
+#based on the LEAVE, the HOUSE variable has the most correlation with leaving
+
+```
+##Code Chunk 5
+```{r}
+#Code Chunk 5:
+
+#5.A
+boxplot(INCOME~LEAVE, data = churn)
+boxplot(HOUSE~LEAVE, data = churn)
+boxplot(LEFTOVER~LEAVE, data = churn)
+
+#5.B
+#aggregate function to apply the summary function to 'INCOME' grouped by 'LEAVE'
+
+summary_by_leave <- aggregate(churn$INCOME, by = list(churn$LEAVE), FUN = summary)
+
+summary_by_leave
+
+```
+##Code Chunk 6
+```{r}
+#Code Chunk 6
+
+#6.A
+# Set seed for reproducibility
+set.seed(222)
+
+#Calculate the size of the data set
+data_size <- nrow(churn)
+
+#Determine the number of samples for the training set (70% of the full data set)
+training_size <- floor(0.70 * data_size)
+
+#Random sample of row indices for the training set
+training_indices <- sample(seq_len(data_size), size = training_size)
+
+#Partitioning the data
+churn_train <- churn[training_indices, ]
+churn_test <- churn[-training_indices, ]
+
+#summary of training and test 
+summary(churn_train)
+summary(churn_test)
+
+#6.B
+#Proportions of Leave and Stay for Training Set:
+
+# Count the instances of 'LEAVE' and 'STAY'
+leave_stay_counts_train <- table(churn_train$LEAVE)
+
+# Calculate the total number of observations
+total_observations_train <- sum(leave_stay_counts_train)
+
+# Calculate percentages
+leave_stay_percentages_train <- (leave_stay_counts_train / total_observations_train) * 100
+
+# Print the percentages
+print(leave_stay_percentages_train) 
+
+#Proportions of Leave and Stay for Test Set:
+
+# Count the instances of 'LEAVE' and 'STAY'
+leave_stay_counts_test <- table(churn_test$LEAVE)
+
+# Calculate the total number of observations
+total_observations_test <- sum(leave_stay_counts_test)
+
+# Calculate percentages
+leave_stay_percentages_test <- (leave_stay_counts_test / total_observations_test) * 100
+
+# Print the percentages
+print(leave_stay_percentages_test)  
+
+```
+##Code Chunk 7
+```{r}
+#Code Chunk 7
+
+#7.A
+#model formula
+formula <- LEAVE ~ .
+
+#C5.0 model
+c5_model <- C5.0(formula, data = churn_train)
+
+print(c5_model)
+
+#7.B
+# Predictions on the training set
+predictions_train <- predict(c5_model, churn_train)
+
+# Predictions on the test set
+predictions_test <- predict(c5_model, churn_test)
+
+# Generate confusion matrices and metrics for the training set
+confusionMatrix_train <- confusionMatrix(predictions_train, churn_train$LEAVE)
+print("Confusion Matrix and Metrics for Training Set:")
+print(confusionMatrix_train)
+
+# Generate confusion matrices and metrics for the test set
+confusionMatrix_test <- confusionMatrix(predictions_test, churn_test$LEAVE)
+print("Confusion Matrix and Metrics for Test Set:")
+print(confusionMatrix_test)
+
+str(churn)
+
+```
+##Code Chunk 8
+```{r}
+#Code Chunk 8: 
+
+#8.A
+#Adjust the CF to simplify the tree
+#This value can be increased if exporting file directly from the RMD
+cf_value <- 0.0009
+
+#Simplified C5.0 model with the adjusted CF
+c5_model_simplified <- C5.0(formula = LEAVE ~ ., data = churn_train, control = C5.0Control(CF = cf_value))
+
+# Check the size of the simplified tree
+cat("Tree size with CF =", cf_value, ":", c5_model_simplified$size, "\n\n")
+
+# Show the summary of the simplified model
+summary(c5_model_simplified)
+
+# Plot the simplified tree
+plot(c5_model_simplified)
+
+#8.B
+# Predictions on the training set
+simplified_predictions_train <- predict(c5_model_simplified, churn_train)
+
+# Predictions on the test set
+simplified_predictions_test <- predict(c5_model_simplified, churn_test)
+
+# Generate confusion matrices and metrics for the training set
+simplified_confusionMatrix_train <- confusionMatrix(simplified_predictions_train, churn_train$LEAVE)
+print("Confusion Matrix and Metrics for Simplified Training Set:")
+print(simplified_confusionMatrix_train)
+
+# Generate confusion matrices and metrics for the test set
+simplified_confusionMatrix_test <- confusionMatrix(simplified_predictions_test, churn_test$LEAVE)
+print("Confusion Matrix and Metrics for Simplified Test Set:")
+print(simplified_confusionMatrix_test)
+```
+##Code Chunk 9
+```{r}
+#9.A 
+#model formula
+formula_no_income <- LEAVE ~ . - INCOME
+
+#C5.0 model
+c5_model_no_income <- C5.0(formula_no_income, data = churn_train)
+
+print(c5_model_no_income)
+
+#9.B 
+# Predictions on the training set
+no_income_predictions_train <- predict(c5_model_no_income, churn_train)
+
+# Predictions on the test set
+no_income_predictions_test <- predict(c5_model_no_income, churn_test)
+
+# Generate confusion matrices and metrics for the training set
+no_income_confusionMatrix_train <- confusionMatrix(no_income_predictions_train, churn_train$LEAVE)
+print("Confusion Matrix and Metrics for No Income Training Set:")
+print(no_income_confusionMatrix_train)
+
+# Generate confusion matrices and metrics for the test set
+no_income_confusionMatrix_test <- confusionMatrix(no_income_predictions_test, churn_test$LEAVE)
+print("Confusion Matrix and Metrics for No Income Test Set:")
+print(no_income_confusionMatrix_test)
+
+
+```
+##Code Chunk 10
+```{r}
+#10.A
+#Adjust the CF to simplify the tree
+cf_value <- 0.01
+
+#Simplified C5.0 model with the adjusted CF
+c5_model_no_income <- C5.0(formula = LEAVE ~ ., data = churn_train, control = C5.0Control(CF = cf_value))
+
+# Check the size of the simplified tree
+cat("Tree size with CF =", cf_value, ":", c5_model_no_income$size, "\n\n")
+
+# Show the summary of the simplified model
+summary(c5_model_no_income)
+
+# Plot the simplified tree
+plot(c5_model_no_income)
+
+#10.B
+# Predictions on the training set
+no_income_predictions_train <- predict(c5_model_no_income, churn_train)
+
+# Predictions on the test set
+no_income_predictions_test <- predict(c5_model_no_income, churn_test)
+
+# Generate confusion matrices and metrics for the training set
+no_income_predictions_train <- confusionMatrix(no_income_predictions_train, churn_train$LEAVE)
+print("Confusion Matrix and Metrics for Simplified Training Set:")
+print(no_income_predictions_train)
+
+# Generate confusion matrices and metrics for the test set
+no_income_predictions_test <- confusionMatrix(no_income_predictions_test, churn_test$LEAVE)
+print("Confusion Matrix and Metrics for Simplified Test Set:")
+print(no_income_predictions_test)
+
+```
+
+
+
+
