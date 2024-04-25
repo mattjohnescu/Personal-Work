@@ -1,2 +1,2 @@
 # Personal-Work
-A compilation of school and personal projects
+A repo of school and personal projects
