@@ -1,2 +1,2 @@
 # Personal-Work
-A repo of school and personal projects
+A repo of personal projects and coding practice
